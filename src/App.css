@@ -1,0 +1,72 @@
+/* Add this CSS to your style.css file */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;500;700&display=swap");
+
+* {
+  font-family: "Poppins", sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  outline: none;
+  border: none;
+  text-decoration: none;
+  text-transform: capitalize;
+  transition: 0.2s ease;
+}
+
+/*! base html codes start */
+html {
+  font-size: 62.5%;
+  overflow-x: hidden;
+}
+
+body {
+  background-color: white;
+  height: 100rem;
+}
+
+/*! base html codes end */
+
+.leftArrow button,
+.rightArrow button {
+  font-size: 2.5rem;
+  padding: 0 1rem;
+  background-color: transparent;
+  position: absolute;
+  top: 0;
+  width: 40px; /* Adjust the width as needed */
+  z-index: 1; /* Add this line to control the stacking order */
+}
+
+.leftArrow button {
+  left: 0;
+}
+
+.rightArrow button {
+  right: 0;
+}
+
+.leftMenuContainer {
+  position: absolute;
+  top: 4%;
+  background-color: aqua;
+  height: calc(100vh - 6rem);
+  width: 30rem;
+  left: -100%;
+}
+
+.leftMenuContainer.active {
+  left: 0;
+}
+
+.rightMenuContainer {
+  position: absolute;
+  top: 4%;
+  background-color: aqua;
+  height: calc(100vh - 6rem);
+  width: 30rem;
+  right: -100%;
+}
+
+.rightMenuContainer.active {
+  right: 0;
+}
