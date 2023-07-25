@@ -35,7 +35,7 @@ const CanvasComponent = () => {
         
         // draw horizontal lines
         for (let i = -numLines; i <= numLines; i++) {
-          const y = (panY % (15 * zoom)) + i * 15 * zoom;
+          const y = (panY % (20 * zoom)) + i * 15 * zoom;
           ctx.moveTo(-canvas.width, y);
           ctx.lineTo(canvas.width, y);
         }
