@@ -87,30 +87,56 @@ const CanvasComponent = () => {
             setStartPanY(event.clientY - panY);
         };
         const handleMouseMove = (event) => {
-            if (isPanning) {
+          if (isPanning) {
               // calculate new pan values
               let newPanX = event.clientX - startPanX;
               let newPanY = event.clientY - startPanY;
-          
+      
+              // define maximum and minimum allowed pan values
+              const maxPanX = 900;
+              const maxPanY = 500;
+              const minPanX = 800;
+              const minPanY = 300;
+      
+              // check if new pan values exceed maximum or minimum allowed values
+              if (newPanX > maxPanX) {
+                  newPanX = maxPanX;
+              } else if (newPanX < minPanX) {
+                  newPanX = minPanX;
+              }
+              if (newPanY > maxPanY) {
+                  newPanY = maxPanY;
+              } else if (newPanY < minPanY) {
+                  newPanY = minPanY;
+              }
+      
               // update pan values
               setPanX(newPanX);
               setPanY(newPanY);
-            }
-          };
-          const handleWheel = (event) => {
-            event.preventDefault();
-          
-            // update zoom based on scroll direction
-            let newZoom;
-            if (event.deltaY < 0) {
-              newZoom = zoom * zoomFactor;
-            } else {
-              newZoom = zoom / zoomFactor;
-            }
-          
-            // update zoom value
-            setZoom(newZoom);
-          };
+          }
+      };
+      const handleWheel = (event) => {
+        event.preventDefault();
+    
+        // update zoom based on scroll direction
+        let newZoom;
+        if (event.deltaY < 0) {
+            newZoom = zoom * zoomFactor;
+        } else {
+            newZoom = zoom / zoomFactor;
+        }
+    
+        // check if new zoom value is within allowed range
+        if (newZoom < minZoom) {
+            newZoom = minZoom;
+        } else if (newZoom > maxZoom) {
+            newZoom = maxZoom;
+        }
+    
+        // update zoom value
+        setZoom(newZoom);
+    };
+    
           
         const handleMouseUp = () => setIsPanning(false);
 
