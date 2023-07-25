@@ -5,6 +5,8 @@ import rightArrow from './arrowImage2.png';
 function Sidebar() {
     const [leftMenuActive, setLeftMenuActive] = useState(false);
     const [rightMenuActive, setRightMenuActive] = useState(false);
+    const leftItems = ["Left Item 1", "Left Item 2", "Left Item 3", "Left Item 4"]; // list of draggable items for the left sidebar
+    const rightItems = ["Right Item 1", "Right Item 2", "Right Item 3", "Right Item 4"]; // list of draggable items for the right sidebar
 
     const handleLeftButtonClick = () => {
         setLeftMenuActive(!leftMenuActive);
@@ -14,39 +16,43 @@ function Sidebar() {
         setRightMenuActive(!rightMenuActive);
     };
 
+    const onDragStart = (event, text) => {
+        event.dataTransfer.setData("text/plain", text);
+    };
+
     return (
         <>
             {/* Left Sidebar */}
             <div className={`sidebar leftSidebar ${leftMenuActive ? 'open' : ''}`}>
+                <button onClick={handleLeftButtonClick}>
+                    <img src={leftArrow} alt='Arrow'/>
+                </button>
                 {leftMenuActive && (
                     <div className="content">
-                        <p>Item 1</p>
-                        <p>Item 2</p>
-                        <p>Item 3</p>
+                        {leftItems.map((item, index) => (
+                            <p key={index} draggable onDragStart={(event) => onDragStart(event, item)}>
+                                {item}
+                            </p>
+                        ))}
                     </div>
                 )}
             </div>
 
             {/* Right Sidebar */}
             <div className={`sidebar rightSidebar ${rightMenuActive ? 'open' : ''}`}>
+                <button onClick={handleRightButtonClick}>
+                    <img src={rightArrow} alt='Arrow'/>
+                </button>
                 {rightMenuActive && (
                     <div className="content">
-                        <p>Item 1</p>
-                        <p>Item 2</p>
-                        <p>Item 3</p>
+                        {rightItems.map((item, index) => (
+                            <p key={index}>
+                                {item}
+                            </p>
+                        ))}
                     </div>
                 )}
             </div>
-
-            {/* Left Toggle Button */}
-            <button className={`toggleButton leftButton ${leftMenuActive ? 'open' : ''}`} onClick={handleLeftButtonClick}>
-                <img src={leftArrow} alt="left arrow"/>
-            </button>
-
-            {/* Right Toggle Button */}
-            <button className={`toggleButton rightButton ${rightMenuActive ? 'open' : ''}`} onClick={handleRightButtonClick}>
-                <img src={rightArrow} alt="right arrow"/>
-            </button>
         </>
     );
 }

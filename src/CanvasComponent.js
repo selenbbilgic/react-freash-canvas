@@ -2,6 +2,12 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 const CanvasComponent = () => {
     
     const canvasRef = useRef(null);
+    const [canvasItems, setCanvasItems] = useState([]);
+    const [dragItem, setDragItem] = useState(null);
+    const [dragging, setDragging] = useState(false);
+    const [dragItemIndex, setDragItemIndex] = useState(null);
+
+
 
     // Variables for panning
     const [panX, setPanX] = useState(0);
@@ -18,31 +24,30 @@ const CanvasComponent = () => {
     const [startPanX, setStartPanX] = useState(0);
     const [startPanY, setStartPanY] = useState(0);
 
-    const drawGrid = (ctx, canvas) => {
-        ctx.beginPath();
-        ctx.strokeStyle = "lightgray";
-        ctx.lineWidth = 2;
+    const drawGrid = useCallback((ctx, canvas) => {
+      ctx.beginPath();
+      ctx.strokeStyle = "lightgray";
+      ctx.lineWidth = 2;
+    
+      // calculate the number of lines to draw based on the zoom level
+      const numLines = Math.ceil(Math.max(canvas.width, canvas.height) / (5 * zoom));
       
-        // calculate the number of lines to draw based on the zoom level
-        const numLines = Math.ceil(Math.max(canvas.width, canvas.height) / (5 * zoom));
-        
-        // draw vertical lines
-        for (let i = -numLines; i <= numLines; i++) {
-          const x = (panX % (15 * zoom)) + i * 15 * zoom;
-          ctx.moveTo(x, -canvas.height);
-          ctx.lineTo(x, canvas.height);
-        }
-        
-        // draw horizontal lines
-        for (let i = -numLines; i <= numLines; i++) {
-          const y = (panY % (20 * zoom)) + i * 15 * zoom;
-          ctx.moveTo(-canvas.width, y);
-          ctx.lineTo(canvas.width, y);
-        }
+      // draw vertical lines
+      for (let i = -numLines; i <= numLines; i++) {
+        const x = (panX % (15 * zoom)) + i * 15 * zoom;
+        ctx.moveTo(x, -canvas.height);
+        ctx.lineTo(x, canvas.height);
+      }
       
-        ctx.stroke();
-      };
-      
+      // draw horizontal lines
+      for (let i = -numLines; i <= numLines; i++) {
+        const y = (panY % (20 * zoom)) + i * 15 * zoom;
+        ctx.moveTo(-canvas.width, y);
+        ctx.lineTo(canvas.width, y);
+      }
+    
+      ctx.stroke();
+  }, [panX, panY, zoom]);
 
     // Draw function
     const draw = useCallback((ctx, canvas) => {
@@ -64,8 +69,67 @@ const CanvasComponent = () => {
 
         // request next animation frame
         requestAnimationFrame(() => draw(ctx, canvas));
-    }, [panX, panY, zoom]);
+        ctx.font = "16px Arial";
+        ctx.fillStyle = "black";
+        for (const item of canvasItems) {
+            ctx.fillText(item.text, item.x, item.y);
+        }
+    }, [panX, panY, zoom, canvasItems]);
 
+    const onDrop = (event) => {
+      event.preventDefault();
+      const data = event.dataTransfer.getData("text/plain");
+      
+      // Calculate the position where the item was dropped and add the item to the canvas items array
+      const rect = canvasRef.current.getBoundingClientRect();
+      const x = (event.clientX - rect.left - panX) / zoom;
+      const y = (event.clientY - rect.top - panY) / zoom;
+      setCanvasItems([...canvasItems, { text: data, x, y }]);
+  };
+
+    const onDragOver = (event) => {
+        event.preventDefault();  // This is necessary to allow a drop.
+    };
+
+    const onMouseDown = useCallback((event) => {
+      const rect = canvasRef.current.getBoundingClientRect();
+      const mouseX = (event.clientX - rect.left - panX) / zoom;
+      const mouseY = (event.clientY - rect.top - panY) / zoom;
+
+      for (let i = canvasItems.length - 1; i >= 0; i--) {
+        const item = canvasItems[i];
+        // considering each character as 16px wide and 24px tall
+        if (
+          mouseX >= item.x && 
+          mouseX <= item.x + (16 * item.text.length) &&
+          mouseY >= item.y - 24 && 
+          mouseY <= item.y
+        ) {
+          setDragging(true);
+          setDragItemIndex(i);
+          break;
+        }
+      }
+    }, [canvasItems, panX, panY, zoom]);
+
+    const onMouseUp = useCallback(() => {
+      setDragging(false);
+      setDragItemIndex(null);
+    }, []);
+
+    const onMouseMove = useCallback((event) => {
+      if (dragging && dragItemIndex !== null) {
+        const rect = canvasRef.current.getBoundingClientRect();
+        const x = (event.clientX - rect.left - panX) / zoom;
+        const y = (event.clientY - rect.top - panY) / zoom;
+        setCanvasItems(prevItems => {
+          const newItems = [...prevItems];
+          newItems[dragItemIndex] = { ...newItems[dragItemIndex], x, y };
+          return newItems;
+        });
+      }
+    }, [dragging, dragItemIndex, panX, panY, zoom]);
+    
     // useEffect to handle canvas drawing and events
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -86,50 +150,71 @@ const CanvasComponent = () => {
             setStartPanX(event.clientX - panX);
             setStartPanY(event.clientY - panY);
         };
+
+        const handleMouseUp = () => {
+            setIsPanning(false);
+        };
+
         const handleMouseMove = (event) => {
-            if (isPanning) {
+          if (isPanning) {
               // calculate new pan values
               let newPanX = event.clientX - startPanX;
               let newPanY = event.clientY - startPanY;
-          
+      
+              // define maximum and minimum allowed pan values
+              const maxPanX = 900;
+              const maxPanY = 500;
+              const minPanX = 800;
+              const minPanY = 300;
+      
+              // check if new pan values exceed maximum or minimum allowed values
+              if (newPanX > maxPanX) {
+                  newPanX = maxPanX;
+              } else if (newPanX < minPanX) {
+                  newPanX = minPanX;
+              }
+              if (newPanY > maxPanY) {
+                  newPanY = maxPanY;
+              } else if (newPanY < minPanY) {
+                  newPanY = minPanY;
+              }
+      
               // update pan values
               setPanX(newPanX);
               setPanY(newPanY);
-            }
-          };
-          const handleWheel = (event) => {
+          }
+      };
+
+        const handleWheel = (event) => {
             event.preventDefault();
-          
-            // update zoom based on scroll direction
-            let newZoom;
+
+            let scale = zoom;
             if (event.deltaY < 0) {
-              newZoom = zoom * zoomFactor;
+                scale *= zoomFactor;
             } else {
-              newZoom = zoom / zoomFactor;
+                scale /= zoomFactor;
             }
-          
-            // update zoom value
-            setZoom(newZoom);
-          };
-          
-        const handleMouseUp = () => setIsPanning(false);
+            scale = Math.min(Math.max(scale, minZoom), maxZoom);
+            setZoom(scale);
+        };
 
-
-        canvas.addEventListener('mousedown', handleMouseDown);
-        canvas.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('mouseup', handleMouseUp);
+        canvas.addEventListener('mousedown', onMouseDown);
+        canvas.addEventListener('mouseup', onMouseUp);
+        canvas.addEventListener('mouseout', onMouseUp);
+        canvas.addEventListener('mousemove', onMouseMove);
         canvas.addEventListener('wheel', handleWheel);
 
         return () => {
-
             window.cancelAnimationFrame(animationFrameId);
-            canvas.removeEventListener('mousedown', handleMouseDown);
-            canvas.removeEventListener('mousemove', handleMouseMove);
-            window.removeEventListener('mouseup', handleMouseUp);
+            canvas.removeEventListener('mousedown', onMouseDown);
+            canvas.removeEventListener('mouseup', onMouseUp);
+            canvas.removeEventListener('mouseout', onMouseUp);
+            canvas.removeEventListener('mousemove', onMouseMove);
             canvas.removeEventListener('wheel', handleWheel);
         };
-    }, [draw, panX, panY, startPanX, startPanY, isPanning, zoom, zoomFactor, minZoom, maxZoom]);
+    }, [draw, onMouseDown, onMouseUp, onMouseMove]);
 
-    return <canvas ref={canvasRef} />;
+    return <canvas ref={canvasRef} onDrop={onDrop} onDragOver={onDragOver} />;
 };
+
 export default CanvasComponent;
