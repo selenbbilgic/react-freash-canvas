@@ -3,7 +3,7 @@ const CanvasComponent = () => {
     
     const canvasRef = useRef(null);
     const [canvasItems, setCanvasItems] = useState([]);
-    const [dragItem, setDragItem] = useState(null);
+    //const [dragItem, setDragItem] = useState(null);
     const [dragging, setDragging] = useState(false);
     const [dragItemIndex, setDragItemIndex] = useState(null);
 
@@ -22,7 +22,7 @@ const CanvasComponent = () => {
     // Variables for mouse panning
     const [isPanning, setIsPanning] = useState(false);
     const [startPanX, setStartPanX] = useState(0);
-    const [startPanY, setStartPanY] = useState(0);
+    const [startPanY, setStartPanY] = useState(0); 
 
     const drawGrid = useCallback((ctx, canvas) => {
       ctx.beginPath();
@@ -118,6 +118,33 @@ const CanvasComponent = () => {
     }, []);
 
     const onMouseMove = useCallback((event) => {
+      if (isPanning) {
+        // calculate new pan values
+        let newPanX = event.clientX - startPanX;
+        let newPanY = event.clientY - startPanY;
+
+        // define maximum and minimum allowed pan values
+        const maxPanX = 900;
+        const maxPanY = 500;
+        const minPanX = 800;
+        const minPanY = 300;
+
+        // check if new pan values exceed maximum or minimum allowed values
+        if (newPanX > maxPanX) {
+            newPanX = maxPanX;
+        } else if (newPanX < minPanX) {
+            newPanX = minPanX;
+        }
+        if (newPanY > maxPanY) {
+            newPanY = maxPanY;
+        } else if (newPanY < minPanY) {
+            newPanY = minPanY;
+        }
+
+        // update pan values
+        setPanX(newPanX);
+        setPanY(newPanY);
+    }
       if (dragging && dragItemIndex !== null) {
         const rect = canvasRef.current.getBoundingClientRect();
         const x = (event.clientX - rect.left - panX) / zoom;
@@ -145,7 +172,7 @@ const CanvasComponent = () => {
         render();
 
         // Add event listeners for panning and zooming
-        const handleMouseDown = (event) => {
+        /*const handleMouseDown = (event) => {
             setIsPanning(true);
             setStartPanX(event.clientX - panX);
             setStartPanY(event.clientY - panY);
@@ -183,20 +210,29 @@ const CanvasComponent = () => {
               setPanX(newPanX);
               setPanY(newPanY);
           }
-      };
+      }; */
 
-        const handleWheel = (event) => {
-            event.preventDefault();
-
-            let scale = zoom;
-            if (event.deltaY < 0) {
-                scale *= zoomFactor;
-            } else {
-                scale /= zoomFactor;
-            }
-            scale = Math.min(Math.max(scale, minZoom), maxZoom);
-            setZoom(scale);
-        };
+      const handleWheel = (event) => {
+        event.preventDefault();
+    
+        // update zoom based on scroll direction
+        let newZoom;
+        if (event.deltaY < 0) {
+            newZoom = zoom * zoomFactor;
+        } else {
+            newZoom = zoom / zoomFactor;
+        }
+    
+        // check if new zoom value is within allowed range
+        if (newZoom < minZoom) {
+            newZoom = minZoom;
+        } else if (newZoom > maxZoom) {
+            newZoom = maxZoom;
+        }
+    
+        // update zoom value
+        setZoom(newZoom);
+    };
 
         canvas.addEventListener('mousedown', onMouseDown);
         canvas.addEventListener('mouseup', onMouseUp);
