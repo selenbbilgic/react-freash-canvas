@@ -6,8 +6,7 @@ function Sidebar() {
     const [leftMenuActive, setLeftMenuActive] = useState(false);
     const [rightMenuActive, setRightMenuActive] = useState(false);
     const leftItems = ["Left Item 1", "Left Item 2", "Left Item 3", "Left Item 4"]; // list of draggable items for the left sidebar
-    const rightItems = ["Right Item 1", "Right Item 2", "Right Item 3", "Right Item 4"]; // list of draggable items for the right sidebar
-
+    const rightItems = ["Right Item 1", "Right Item 2", "Right Item 3", "Right Item 4"]; // Unremovable
     const handleLeftButtonClick = () => {
         setLeftMenuActive(!leftMenuActive);
     };

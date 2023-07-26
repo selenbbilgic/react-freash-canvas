@@ -62,7 +62,8 @@ body {
   width: 30rem;
 }
 
-.leftSidebar {
+.leftSidebar{
+  position: fixed;
   left: 5%;
 }
 
@@ -74,13 +75,16 @@ body {
   width: 30rem;
 }
 
-.rightSidebar {
-  right: 5%;
-  left: auto;
+.rightSidebar button {
+  top : 0;
+  right: 0;
 }
 
+
+
 .rightSidebar .toggleButton { /* Added selector for right button */
-  right: 5%; /* Adjusted position */
+  right: 0; /* Adjusted position */
+
 }
 
 .rightSidebar.open {

@@ -51,41 +51,44 @@ const CanvasComponent = () => {
 
     // Draw function
     const draw = useCallback((ctx, canvas) => {
-        // clear canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // save context state
-        ctx.save();
+      // save context state
+      ctx.save();
 
-        // translate and scale context
-        ctx.translate(panX, panY);
-        ctx.scale(zoom, zoom);
+      // translate and scale context
+      ctx.translate(panX, panY);
+      ctx.scale(zoom, zoom);
 
-        // draw grid
-        drawGrid(ctx, canvas);
+      // draw grid
+      drawGrid(ctx, canvas);
 
-        // restore context state
-        ctx.restore();
+      // restore context state
+      ctx.restore();
 
-        // request next animation frame
-        requestAnimationFrame(() => draw(ctx, canvas));
-        ctx.font = "16px Arial";
-        ctx.fillStyle = "black";
-        for (const item of canvasItems) {
-            ctx.fillText(item.text, item.x, item.y);
-        }
-    }, [panX, panY, zoom, canvasItems]);
+      // request next animation frame
+      requestAnimationFrame(() => draw(ctx, canvas));
+      ctx.font = "16px Arial";
+      ctx.fillStyle = "black";
+      for (const item of canvasItems) {
+        const adjustedX = item.x * zoom + panX;
+        const adjustedY = item.y * zoom + panY;
+        ctx.fillText(item.text, adjustedX, adjustedY);
+      }
+  }, [panX, panY, zoom, canvasItems, drawGrid]);
 
     const onDrop = (event) => {
       event.preventDefault();
       const data = event.dataTransfer.getData("text/plain");
-      
+    
       // Calculate the position where the item was dropped and add the item to the canvas items array
       const rect = canvasRef.current.getBoundingClientRect();
       const x = (event.clientX - rect.left - panX) / zoom;
       const y = (event.clientY - rect.top - panY) / zoom;
       setCanvasItems([...canvasItems, { text: data, x, y }]);
-  };
+    };
+  
 
     const onDragOver = (event) => {
         event.preventDefault();  // This is necessary to allow a drop.
@@ -95,67 +98,42 @@ const CanvasComponent = () => {
       const rect = canvasRef.current.getBoundingClientRect();
       const mouseX = (event.clientX - rect.left - panX) / zoom;
       const mouseY = (event.clientY - rect.top - panY) / zoom;
-
+  
       for (let i = canvasItems.length - 1; i >= 0; i--) {
-        const item = canvasItems[i];
-        // considering each character as 16px wide and 24px tall
-        if (
-          mouseX >= item.x && 
-          mouseX <= item.x + (16 * item.text.length) &&
-          mouseY >= item.y - 24 && 
-          mouseY <= item.y
-        ) {
-          setDragging(true);
-          setDragItemIndex(i);
-          break;
-        }
+          const item = canvasItems[i];
+          // considering each character as 16px wide and 24px tall
+          if (
+              mouseX >= item.x && 
+              mouseX <= item.x + (16 * item.text.length) &&
+              mouseY >= item.y - 24 && 
+              mouseY <= item.y
+          ) {
+              setDragging(true);
+              setDragItemIndex(i);
+              break;
+          }
       }
-    }, [canvasItems, panX, panY, zoom]);
-
+  }, [canvasItems, panX, panY, zoom]);
+   
+    
     const onMouseUp = useCallback(() => {
       setDragging(false);
       setDragItemIndex(null);
-    }, []);
+  }, []);
+  
 
     const onMouseMove = useCallback((event) => {
-      if (isPanning) {
-        // calculate new pan values
-        let newPanX = event.clientX - startPanX;
-        let newPanY = event.clientY - startPanY;
-
-        // define maximum and minimum allowed pan values
-        const maxPanX = 900;
-        const maxPanY = 500;
-        const minPanX = 800;
-        const minPanY = 300;
-
-        // check if new pan values exceed maximum or minimum allowed values
-        if (newPanX > maxPanX) {
-            newPanX = maxPanX;
-        } else if (newPanX < minPanX) {
-            newPanX = minPanX;
-        }
-        if (newPanY > maxPanY) {
-            newPanY = maxPanY;
-        } else if (newPanY < minPanY) {
-            newPanY = minPanY;
-        }
-
-        // update pan values
-        setPanX(newPanX);
-        setPanY(newPanY);
-    }
       if (dragging && dragItemIndex !== null) {
-        const rect = canvasRef.current.getBoundingClientRect();
-        const x = (event.clientX - rect.left - panX) / zoom;
-        const y = (event.clientY - rect.top - panY) / zoom;
-        setCanvasItems(prevItems => {
-          const newItems = [...prevItems];
-          newItems[dragItemIndex] = { ...newItems[dragItemIndex], x, y };
-          return newItems;
-        });
+          const rect = canvasRef.current.getBoundingClientRect();
+          const x = (event.clientX - rect.left) / zoom;
+          const y = (event.clientY - rect.top) / zoom;
+          setCanvasItems(prevItems => {
+              const newItems = [...prevItems];
+              newItems[dragItemIndex] = { ...newItems[dragItemIndex], x, y };
+              return newItems;
+          });
       }
-    }, [dragging, dragItemIndex, panX, panY, zoom]);
+  }, [dragging, dragItemIndex, zoom]);
     
     // useEffect to handle canvas drawing and events
     useEffect(() => {
@@ -215,6 +193,9 @@ const CanvasComponent = () => {
       const handleWheel = (event) => {
         event.preventDefault();
     
+        // Get old zoom level
+        const oldZoom = zoom;
+        
         // update zoom based on scroll direction
         let newZoom;
         if (event.deltaY < 0) {
@@ -230,9 +211,21 @@ const CanvasComponent = () => {
             newZoom = maxZoom;
         }
     
+        // Recalculate the x and y coordinates of each item
+        setCanvasItems(prevItems => {
+            const newItems = [...prevItems];
+            for (let i = 0; i < newItems.length; i++) {
+                newItems[i].x *= newZoom / oldZoom;
+                newItems[i].y *= newZoom / oldZoom;
+            }
+            return newItems;
+        });
+    
         // update zoom value
         setZoom(newZoom);
     };
+    
+    
 
         canvas.addEventListener('mousedown', onMouseDown);
         canvas.addEventListener('mouseup', onMouseUp);
