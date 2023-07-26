@@ -51,32 +51,36 @@ const CanvasComponent = () => {
 
     // Draw function
     const draw = useCallback((ctx, canvas) => {
-        // clear canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // save context state
-        ctx.save();
-
-        // translate and scale context
-        ctx.translate(panX, panY);
-        ctx.scale(zoom, zoom);
-
-        // draw grid
-        drawGrid(ctx, canvas);
-
-        // restore context state
-        ctx.restore();
-
-        // request next animation frame
-        requestAnimationFrame(() => draw(ctx, canvas));
-        ctx.font = "16px Arial";
-        ctx.fillStyle = "black";
-        for (const item of canvasItems) {
-          const adjustedX = item.x * zoom + panX;
-          const adjustedY = item.y * zoom + panY;
-          ctx.fillText(item.text, adjustedX, adjustedY);
-        }
+      // clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+      // save context state
+      ctx.save();
+    
+      // translate and scale context
+      ctx.translate(panX, panY);
+      ctx.scale(zoom, zoom);
+    
+      // draw grid
+      drawGrid(ctx, canvas);
+    
+      // restore context state
+      ctx.restore();
+    
+      // request next animation frame
+      requestAnimationFrame(() => draw(ctx, canvas));
+    
+      // Adjust the font size according to the zoom level
+      ctx.font = `${16 * zoom}px Arial`;
+      ctx.fillStyle = "black";
+    
+      for (const item of canvasItems) {
+        const adjustedX = item.x * zoom + panX;
+        const adjustedY = item.y * zoom + panY;
+        ctx.fillText(item.text, adjustedX, adjustedY);
+      }
     }, [panX, panY, zoom, canvasItems, drawGrid]);
+    
 
     const onDrop = (event) => {
       event.preventDefault();
@@ -125,13 +129,13 @@ const CanvasComponent = () => {
           // calculate new pan values
           let newPanX = event.clientX - startPanX;
           let newPanY = event.clientY - startPanY;
-  
+    
           // define maximum and minimum allowed pan values
           const maxPanX = 900;
           const maxPanY = 500;
           const minPanX = 800;
           const minPanY = 300;
-  
+    
           // check if new pan values exceed maximum or minimum allowed values
           if (newPanX > maxPanX) {
               newPanX = maxPanX;
@@ -143,22 +147,23 @@ const CanvasComponent = () => {
           } else if (newPanY < minPanY) {
               newPanY = minPanY;
           }
-  
+    
           // update pan values
           setPanX(newPanX);
           setPanY(newPanY);
-      }
-      if (dragging && dragItemIndex !== null) {
+      } else if (dragging && dragItemIndex !== null) {
+          // update position of dragged item
           const rect = canvasRef.current.getBoundingClientRect();
           const x = (event.clientX - rect.left - panX) / zoom;
           const y = (event.clientY - rect.top - panY) / zoom;
-          setCanvasItems(prevItems => {
+          setCanvasItems((prevItems) => {
               const newItems = [...prevItems];
               newItems[dragItemIndex] = { ...newItems[dragItemIndex], x, y };
               return newItems;
           });
       }
-  }, [dragging, dragItemIndex, isPanning, panX, panY, startPanX, startPanY, zoom]);
+    }, [dragging, dragItemIndex, isPanning, panX, panY, startPanX, startPanY, zoom]);
+    
   
     
   useEffect(() => {
