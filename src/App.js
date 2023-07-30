@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import Sidebar from './Sidebar';
 
 const CanvasComponent = React.lazy(() => import('./CanvasComponent'));
@@ -7,10 +8,16 @@ const CanvasComponent = React.lazy(() => import('./CanvasComponent'));
 function App() {
     return (
         <div className="App">
-            <Sidebar />
-            <Suspense fallback={<div>Loading...</div>}>
-                <CanvasComponent />
-            </Suspense>
+            <Router>
+                <Sidebar />
+                <Switch>
+                    <Route path="/" exact>
+                        <Suspense fallback={<div>Loading...</div>}>
+                            <CanvasComponent />
+                        </Suspense>
+                    </Route>
+                </Switch>
+            </Router>
         </div>
     );
 }

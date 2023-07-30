@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import leftArrow from './arrowImage1.png';
 import rightArrow from './arrowImage2.png';
+import './App.css';
 
 function Sidebar() {
     const [leftMenuActive, setLeftMenuActive] = useState(false);
