@@ -23,7 +23,7 @@ function Sidebar() {
     return (
         <>
             {/* Left Sidebar */}
-            <div className={`sidebar leftSidebar ${leftMenuActive ? 'open' : ''}`}>
+            <div className={`leftSidebar sidebar-container toggleButton${leftMenuActive ? 'active' : ''}`}>
                 <button onClick={handleLeftButtonClick}>
                     <img src={leftArrow} alt='Arrow'/>
                 </button>
@@ -39,7 +39,7 @@ function Sidebar() {
             </div>
 
             {/* Right Sidebar */}
-            <div className={`sidebar rightSidebar ${rightMenuActive ? 'open' : ''}`}>
+            <div className={`rightSidebar sidebar-container toggleButton ${rightMenuActive ? 'active' : ''}`}>
                 <button onClick={handleRightButtonClick}>
                     <img src={rightArrow} alt='Arrow'/>
                 </button>
