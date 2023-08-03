@@ -1,8 +1,7 @@
-/* Add this CSS to your style.css file */
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;500;700&display=swap");
 
 * {
-  font-family: "Poppins", sans-serif;
+  font-family: "Poppins", 'Times New Roman', Times, serif;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -13,60 +12,94 @@
   transition: 0.2s ease;
 }
 
-/*! base html codes start */
 html {
-  font-size: 62.5%;
+  font-size: 30%;
   overflow-x: hidden;
 }
 
 body {
   background-color: white;
-  height: 100rem;
+  height: 100vh;
 }
 
-/*! base html codes end */
+.sidebar-container {
+  position: fixed;
+  height: 100vh;
+  width: 100vw;
+  z-index: 1;
+}
 
-.leftArrow button,
-.rightArrow button {
+.toggleButton {
+  position: fixed;
+  top: 1%; 
   font-size: 2.5rem;
   padding: 0 1rem;
   background-color: transparent;
+  width: 40px;
+  height: 40px;
+  z-index: 1;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.toggleButton img {
+  width: 100%;
+  height: 100%;
+}
+
+.sidebar.active {
+  width: 10rem;
+}
+
+.leftSidebar {
+  left: 5%;
+}
+
+.leftSidebar .toggleButton { 
+  left: 5%; 
+}
+
+.leftSidebar.active {
+  width: 30rem;
+}
+
+.rightSidebar {
+  right: 5%;
+  left: auto;
+}
+
+.rightSidebar .toggleButton { 
+  right: 5%; 
+}
+
+.rightSidebar.active {
+  width: 30rem;
+}
+
+.content {
+  background-color:transparent;
+  padding: 20px;
+  
+}
+
+.content p {
+  cursor: grab; /* Change the mouse cursor when over draggable element */
+  padding: 1rem;
+  border: 1px solid #ddd;
+  margin-bottom: 1rem;
+}
+
+canvas {
   position: absolute;
   top: 0;
-  width: 40px; /* Adjust the width as needed */
-  z-index: 1; /* Add this line to control the stacking order */
-}
-
-.leftArrow button {
   left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
 }
 
+.leftArrow button,
 .rightArrow button {
-  right: 0;
-}
-
-.leftMenuContainer {
-  position: absolute;
-  top: 4%;
-  background-color: aqua;
-  height: calc(100vh - 6rem);
-  width: 30rem;
-  left: -100%;
-}
-
-.leftMenuContainer.active {
-  left: 0;
-}
-
-.rightMenuContainer {
-  position: absolute;
-  top: 4%;
-  background-color: aqua;
-  height: calc(100vh - 6rem);
-  width: 30rem;
-  right: -100%;
-}
-
-.rightMenuContainer.active {
-  right: 0;
+  z-index: 1;
 }
